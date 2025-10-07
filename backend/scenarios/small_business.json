@@ -1,0 +1,39 @@
+{
+  "nodes": [
+    {
+      "id": "firewall_01",
+      "name": "Main Firewall",
+      "node_type": "Firewall",
+      "exposed_to_internet": true,
+      "security_posture_score": 0.8,
+      "services_running": [{ "id": "firewall_service", "protocol": "various" }],
+      "vulnerabilities": []
+    },
+    {
+      "id": "web_server_01",
+      "name": "Public Web Server",
+      "node_type": "Server",
+      "value": 8.0,
+      "security_posture_score": 0.6,
+      "services_running": [
+        { "id": "http_server", "protocol": "TCP/80" },
+        { "id": "ssh_admin", "protocol": "TCP/22" }
+      ],
+      "vulnerabilities": [
+        {
+          "cve_id": "CVE-2024-0001",
+          "service_id": "http_server",
+          "exploitability": 0.9,
+          "severity": 0.8
+        }
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "source_node_id": "firewall_01",
+      "target_node_id": "web_server_01",
+      "bidirectional": true
+    }
+  ]
+}
