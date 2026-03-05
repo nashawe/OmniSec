@@ -2,9 +2,16 @@
 
 import time
 import threading
+
 from backend.simulation.time_manager import TimeManager
-from backend.simulation.event_bus import event_bus
+from backend.simulation.event_bus import EventBus
 from backend.simulation.state_manager import StateManager
+from backend.simulation.action_executor import ActionExecutor
+
+from backend.actions.red_actions import ScanNode
+from backend.actions.blue_actions import VulnerabilityScan
+
+from backend.agents.red_team_ai import RedTeamAI
 
 class SimulationEngine:
     """
@@ -13,12 +20,18 @@ class SimulationEngine:
     """
     def __init__(self):
         self.time_manager = TimeManager()
-        self.event_bus = event_bus
+        self.event_bus = EventBus()
         self.state_manager = StateManager()
+        self.action_executor = ActionExecutor(self.state_manager, self.time_manager, self.event_bus)
+        
+        # --- NEW LINES ARE HERE ---
+        # The AI needs access to the core components to see and act.
+        # We will initialize it to None first.
+        self.red_team_ai = None
+        # self.blue_team_ai = None # Placeholder for later
         
         self._loop_thread = None
         self._stop_event = threading.Event()
-
         print("DEBUG: SimulationEngine initialized.")
 
     def _simulation_loop(self):
@@ -32,21 +45,26 @@ class SimulationEngine:
                 last_real_time = time.time()
                 continue
             
+            # Calculate how much simulation time should pass in this tick
             current_real_time = time.time()
             real_delta_t = current_real_time - last_real_time
             last_real_time = current_real_time
             sim_delta_t = real_delta_t * self.time_manager.get_speed()
             target_sim_time = self.time_manager.current_time + sim_delta_t
-
+            
+            # Process all scheduled events that are due
             self.time_manager.process_events_until(target_sim_time)
             
-            # Placeholder for AI Agent Actions
-            # self.red_team_ai.decide_actions(...)
-            # self.blue_team_ai.decide_actions(...)
+            # Give the AI agents a chance to make decisions
+            if self.red_team_ai:
+                self.red_team_ai.decide_actions()
+            # if self.blue_team_ai: # This is a placeholder for when we create the Blue AI
+            #     self.blue_team_ai.decide_actions()
             
-            # Use carriage return '\r' to print on the same line.
+            # Update the time display
             print(f"\rSIM TIME: {self.time_manager.current_time:.2f}", end="")
 
+            # Sleep briefly to be CPU-friendly
             time.sleep(0.01)
 
         print("\nENGINE_LOOP: Simulation loop thread has stopped.")
@@ -55,11 +73,9 @@ class SimulationEngine:
         if not self.state_manager.network_graph:
             print("\nERROR: Cannot start simulation. No scenario loaded.")
             return
-
         if self.state_manager.is_running:
             print("\nDEBUG: Simulation is already running.")
             return
-
         print("\nENGINE: Starting simulation...")
         
         self.state_manager.is_running = True
@@ -72,10 +88,6 @@ class SimulationEngine:
         self.time_manager.resume()
 
     def pause_simulation(self):
-        if not self.state_manager.is_running:
-            print("\nDEBUG: Simulation is not running.")
-            return
-        # A newline is needed to move off the 'SIM TIME' line.
         print("\nENGINE: Pausing simulation...")
         self.state_manager.is_running = False
         self.time_manager.pause()
@@ -89,9 +101,15 @@ class SimulationEngine:
 
         self.state_manager.reset(scenario_path)
         self.time_manager.reset()
+
+        # --- NEW LINES ARE HERE ---
+        # Now that a scenario is loaded into the state, create the AI agent.
+        print("ENGINE: Initializing AI agents...")
+        self.red_team_ai = RedTeamAI(self.state_manager, self.action_executor, self.event_bus)
+        # self.blue_team_ai = BlueTeamAI(...) # Placeholder for later
+
         print("ENGINE: Simulation reset complete. Ready to start.")
 
     def set_simulation_speed(self, factor: float):
-        # A newline is needed to move off the 'SIM TIME' line.
         print(f"\nENGINE: Setting simulation speed to {factor}x.")
         self.time_manager.set_speed(factor)

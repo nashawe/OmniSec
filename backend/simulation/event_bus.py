@@ -26,7 +26,7 @@ class EventBus:
 
     def publish(self, event_type: str, payload: dict):
         """Notifies all registered subscribers for event_type."""
-        # print(f"DEBUG: Publishing event '{event_type}' with payload: {payload}")
+        print(f"DEBUG: Publishing event '{event_type}' with payload: {payload}")
         for callback in self.subscribers[event_type]:
             try:
                 callback(event_type, payload)

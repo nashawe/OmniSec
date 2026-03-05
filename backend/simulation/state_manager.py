@@ -1,6 +1,8 @@
 # backend/simulation/state_manager.py
 
+from collections import deque
 from backend.simulation.objects.network_graph import NetworkGraph
+
 
 class StateManager:
     """
@@ -12,7 +14,22 @@ class StateManager:
         self.red_resources: float = 100.0
         self.blue_resources: float = 100.0
         self.is_running: bool = False
+
+        # A rolling buffer of the last 50 events for the GUI event feed.
+        # deque with maxlen automatically drops old events when full.
+        self.recent_events: deque = deque(maxlen=50)
+
         print("DEBUG: StateManager initialized.")
+
+    def record_event(self, event_type: str, payload: dict):
+        """
+        Adds an event to the recent_events buffer so it can be
+        included in the next WebSocket snapshot sent to the GUI.
+        """
+        self.recent_events.append({
+            "event_type": event_type,
+            "payload": payload
+        })
 
     def load_scenario(self, scenario_path: str):
         """Loads a network graph from a scenario file."""
@@ -22,7 +39,7 @@ class StateManager:
             print("DEBUG: Scenario loaded successfully.")
         except FileNotFoundError:
             print(f"ERROR: Scenario file not found at {scenario_path}")
-            self.network_graph = NetworkGraph() # Load an empty graph
+            self.network_graph = NetworkGraph()
         except Exception as e:
             print(f"ERROR: Failed to load scenario: {e}")
             self.network_graph = NetworkGraph()
@@ -34,4 +51,20 @@ class StateManager:
         self.red_resources = 100.0
         self.blue_resources = 100.0
         self.is_running = False
+        self.recent_events.clear()
         print("DEBUG: StateManager has been reset.")
+
+    def to_dict(self, sim_time: float) -> dict:
+        """
+        Serializes the entire simulation state into a dictionary.
+        This is what gets broadcast over the WebSocket to the GUI
+        on every tick.
+        """
+        return {
+            "sim_time": round(sim_time, 2),
+            "is_running": self.is_running,
+            "red_resources": round(self.red_resources, 2),
+            "blue_resources": round(self.blue_resources, 2),
+            "network": self.network_graph.to_dict() if self.network_graph else {"nodes": [], "edges": []},
+            "recent_events": list(self.recent_events)
+        }
