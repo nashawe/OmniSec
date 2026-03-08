@@ -5,8 +5,8 @@ from .base_action import BaseAction, Team
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from backend.simulation.state_manager import StateManager
-    from backend.simulation.event_bus import EventBus
+    from ..simulation.state_manager import StateManager
+    from ..simulation.event_bus import EventBus
 
 class VulnerabilityScan(BaseAction):
     """

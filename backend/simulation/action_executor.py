@@ -1,12 +1,12 @@
 # backend/simulation/action_executor.py
 
 from typing import TYPE_CHECKING
-from backend.actions.base_action import BaseAction, Team
+from ..actions.base_action import BaseAction, Team
 
 if TYPE_CHECKING:
-    from backend.simulation.state_manager import StateManager
-    from backend.simulation.time_manager import TimeManager
-    from backend.simulation.event_bus import EventBus
+    from .state_manager import StateManager
+    from .time_manager import TimeManager
+    from .event_bus import EventBus
 
 class ActionExecutor:
     """

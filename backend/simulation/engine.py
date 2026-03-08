@@ -3,15 +3,12 @@
 import time
 import threading
 
-from backend.simulation.time_manager import TimeManager
-from backend.simulation.event_bus import EventBus
-from backend.simulation.state_manager import StateManager
-from backend.simulation.action_executor import ActionExecutor
+from .time_manager import TimeManager
+from .event_bus import EventBus
+from .state_manager import StateManager
+from .action_executor import ActionExecutor
 
-from backend.actions.red_actions import ScanNode
-from backend.actions.blue_actions import VulnerabilityScan
-
-from backend.agents.red_team_ai import RedTeamAI
+from ..agents.red_team_ai import RedTeamAI
 
 class SimulationEngine:
     """

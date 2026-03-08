@@ -2,12 +2,12 @@
 
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING
-from backend.actions.base_action import Team
+from ..actions.base_action import Team
 
 if TYPE_CHECKING:
-    from backend.simulation.state_manager import StateManager
-    from backend.simulation.action_executor import ActionExecutor
-    from backend.simulation.event_bus import EventBus
+    from ..simulation.state_manager import StateManager
+    from ..simulation.action_executor import ActionExecutor
+    from ..simulation.event_bus import EventBus
 
 class BaseAgent(ABC):
     """

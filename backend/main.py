@@ -1,5 +1,5 @@
 import uvicorn
-from api.main import app as fastapi_app # Import the FastAPI app instance
+from backend.api.main import app as fastapi_app # Import the FastAPI app instance
 
 def run_backend():
     """
@@ -9,7 +9,7 @@ def run_backend():
     print("Starting OmniSec Backend (FastAPI + Uvicorn)...")
     # The 'api.main:app' string tells Uvicorn to look for 'app'
     # inside 'main.py' within the 'api' directory.
-    uvicorn.run(fastapi_app, host="0.0.0.0", port=8000, reload=True)
+    uvicorn.run(fastapi_app, host="0.0.0.0", port=8000, reload=False)
 
 if __name__ == "__main__":
     run_backend()

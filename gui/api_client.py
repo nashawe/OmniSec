@@ -123,7 +123,7 @@ class APIClient(QObject):
         self._execute_in_thread("/api/simulation/pause")
 
     def reset_simulation(self):
-        self._execute_in_thread("/api/simulation/reset/small_business")
+        self._execute_in_thread("/api/simulation/reset/corporate_network")
 
     def set_simulation_speed(self, speed: float):
         self._execute_in_thread(f"/api/simulation/speed/{speed}")

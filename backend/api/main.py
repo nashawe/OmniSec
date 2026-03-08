@@ -17,12 +17,14 @@ from fastapi.responses import HTMLResponse
 
 
 # ---------------------------------------------------------------------------
-# Custom JSON encoder — handles Enums and anything else non-serializable
+# Custom JSON encoder — handles Enums, sets, and anything else non-serializable
 # ---------------------------------------------------------------------------
 class SimulationEncoder(json.JSONEncoder):
     def default(self, obj):
         if isinstance(obj, Enum):
-            return obj.name  # converts PatchStatus.UNPATCHED → "UNPATCHED"
+            return obj.name
+        if isinstance(obj, set):
+            return list(obj)
         return super().default(obj)
 
 
@@ -31,7 +33,7 @@ class SimulationEncoder(json.JSONEncoder):
 # ---------------------------------------------------------------------------
 print("API: Creating global SimulationEngine instance...")
 simulation_engine = SimulationEngine()
-scenario_path = os.path.join(PROJECT_ROOT, "backend", "scenarios", "small_business.json")
+scenario_path = os.path.join(PROJECT_ROOT, "backend", "scenarios", "corporate_network.json")
 simulation_engine.reset_simulation(scenario_path)
 
 
@@ -71,7 +73,7 @@ manager = ConnectionManager()
 app = FastAPI(
     title="OmniSec Cyber Conflict Simulation API",
     description="API for managing and interacting with the OmniSec simulation.",
-    version="0.0.1",
+    version="0.2.0",
 )
 
 
@@ -89,6 +91,7 @@ _EVENTS_TO_RECORD = [
     "ACTION_FAILED",
     "RED_TEAM_INFO_GAINED",
     "BLUE_TEAM_VULN_DISCOVERED",
+    "BLUE_ALERT",
 ]
 for _event_type in _EVENTS_TO_RECORD:
     simulation_engine.event_bus.subscribe(_event_type, _record_all_events)
@@ -107,7 +110,6 @@ async def state_broadcaster():
                 snapshot = simulation_engine.state_manager.to_dict(
                     simulation_engine.time_manager.current_time
                 )
-                # SimulationEncoder handles Enum → string automatically
                 await manager.broadcast(json.dumps(snapshot, cls=SimulationEncoder))
             except Exception as e:
                 print(f"WS: Error building/broadcasting snapshot: {e}")
@@ -120,7 +122,7 @@ async def startup_event():
 
 
 # ---------------------------------------------------------------------------
-# HTTP endpoints
+# HTTP endpoints — simulation control
 # ---------------------------------------------------------------------------
 @app.get("/", response_class=HTMLResponse, include_in_schema=False)
 async def read_root():
@@ -146,6 +148,50 @@ async def reset_simulation(scenario_name: str):
 async def set_simulation_speed(factor: float):
     simulation_engine.set_simulation_speed(factor)
     return {"message": f"Simulation speed set to {factor}x."}
+
+
+# ---------------------------------------------------------------------------
+# HTTP endpoints — kill chain & state inspection
+# ---------------------------------------------------------------------------
+@app.get("/api/state/kill_chain")
+async def get_kill_chain_progress():
+    """Returns per-node kill chain stage lists."""
+    snapshot = simulation_engine.state_manager.to_dict(
+        simulation_engine.time_manager.current_time
+    )
+    return {
+        "kill_chain_progress": snapshot["kill_chain_progress"],
+        "exfil_complete": snapshot["exfil_complete"],
+    }
+
+@app.get("/api/state/nodes")
+async def get_node_statuses():
+    """Returns the current status of every node."""
+    nodes = simulation_engine.state_manager.network_graph.get_all_nodes()
+    return {
+        "nodes": {
+            n.id: {
+                "name": n.name,
+                "node_type": n.node_type,
+                "status": n.current_status.name,
+                "value": n.value,
+            }
+            for n in nodes
+        }
+    }
+
+@app.get("/api/state/resources")
+async def get_resources():
+    """Returns Red and Blue team resource levels."""
+    return {
+        "red_resources": simulation_engine.state_manager.red_resources,
+        "blue_resources": simulation_engine.state_manager.blue_resources,
+    }
+
+@app.get("/api/state/kill_chain_log")
+async def get_kill_chain_log():
+    """Returns the last 100 kill chain log entries."""
+    return {"log": simulation_engine.state_manager.kill_chain_log[-100:]}
 
 
 # ---------------------------------------------------------------------------

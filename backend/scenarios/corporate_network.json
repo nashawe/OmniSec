@@ -1,0 +1,220 @@
+{
+  "nodes": [
+    {
+      "id": "fw_edge",
+      "name": "Edge Firewall",
+      "node_type": "Firewall",
+      "exposed_to_internet": true,
+      "security_posture_score": 0.85,
+      "value": 2.0,
+      "detection_chance_modifier": 0.4,
+      "has_admin_users": false,
+      "smb_enabled": false,
+      "rdp_enabled": false,
+      "services_running": [
+        { "id": "fw_mgmt", "protocol": "TCP/443" }
+      ],
+      "vulnerabilities": []
+    },
+    {
+      "id": "web_dmz",
+      "name": "DMZ Web Server",
+      "node_type": "Server",
+      "exposed_to_internet": true,
+      "security_posture_score": 0.45,
+      "value": 5.0,
+      "detection_chance_modifier": 0.2,
+      "has_admin_users": false,
+      "smb_enabled": false,
+      "rdp_enabled": false,
+      "c2_resource_generation_rate": 1.5,
+      "services_running": [
+        { "id": "http_apache", "protocol": "TCP/80" },
+        { "id": "https_apache", "protocol": "TCP/443" },
+        { "id": "ssh_admin", "protocol": "TCP/22" }
+      ],
+      "vulnerabilities": [
+        {
+          "cve_id": "CVE-2024-3094",
+          "service_id": "http_apache",
+          "exploitability": 0.85,
+          "severity": 0.9
+        },
+        {
+          "cve_id": "CVE-2023-44487",
+          "service_id": "https_apache",
+          "exploitability": 0.6,
+          "severity": 0.7
+        }
+      ]
+    },
+    {
+      "id": "mail_srv",
+      "name": "Mail Server",
+      "node_type": "Server",
+      "exposed_to_internet": false,
+      "security_posture_score": 0.55,
+      "value": 6.0,
+      "detection_chance_modifier": 0.25,
+      "has_admin_users": true,
+      "smb_enabled": true,
+      "rdp_enabled": false,
+      "c2_resource_generation_rate": 2.0,
+      "services_running": [
+        { "id": "smtp", "protocol": "TCP/25" },
+        { "id": "imap", "protocol": "TCP/993" }
+      ],
+      "vulnerabilities": [
+        {
+          "cve_id": "CVE-2024-21413",
+          "service_id": "imap",
+          "exploitability": 0.7,
+          "severity": 0.8
+        }
+      ]
+    },
+    {
+      "id": "ad_dc",
+      "name": "Domain Controller",
+      "node_type": "Server",
+      "exposed_to_internet": false,
+      "security_posture_score": 0.75,
+      "value": 10.0,
+      "detection_chance_modifier": 0.35,
+      "has_admin_users": true,
+      "smb_enabled": true,
+      "rdp_enabled": true,
+      "c2_resource_generation_rate": 3.0,
+      "services_running": [
+        { "id": "ldap", "protocol": "TCP/389" },
+        { "id": "kerberos", "protocol": "TCP/88" },
+        { "id": "smb_share", "protocol": "TCP/445" },
+        { "id": "rdp", "protocol": "TCP/3389" }
+      ],
+      "vulnerabilities": [
+        {
+          "cve_id": "CVE-2020-1472",
+          "service_id": "ldap",
+          "exploitability": 0.5,
+          "severity": 1.0
+        }
+      ]
+    },
+    {
+      "id": "file_srv",
+      "name": "File Server",
+      "node_type": "Server",
+      "exposed_to_internet": false,
+      "security_posture_score": 0.50,
+      "value": 8.0,
+      "detection_chance_modifier": 0.15,
+      "has_admin_users": false,
+      "smb_enabled": true,
+      "rdp_enabled": true,
+      "c2_resource_generation_rate": 2.0,
+      "services_running": [
+        { "id": "smb_share", "protocol": "TCP/445" },
+        { "id": "rdp", "protocol": "TCP/3389" }
+      ],
+      "vulnerabilities": [
+        {
+          "cve_id": "CVE-2017-0144",
+          "service_id": "smb_share",
+          "exploitability": 0.8,
+          "severity": 0.9
+        }
+      ]
+    },
+    {
+      "id": "db_srv",
+      "name": "Database Server",
+      "node_type": "Database",
+      "exposed_to_internet": false,
+      "security_posture_score": 0.65,
+      "value": 10.0,
+      "detection_chance_modifier": 0.30,
+      "has_admin_users": true,
+      "smb_enabled": false,
+      "rdp_enabled": true,
+      "c2_resource_generation_rate": 3.0,
+      "services_running": [
+        { "id": "mssql", "protocol": "TCP/1433" },
+        { "id": "rdp", "protocol": "TCP/3389" }
+      ],
+      "vulnerabilities": [
+        {
+          "cve_id": "CVE-2022-29885",
+          "service_id": "mssql",
+          "exploitability": 0.55,
+          "severity": 0.85
+        }
+      ]
+    },
+    {
+      "id": "ws_exec_01",
+      "name": "Exec Workstation",
+      "node_type": "Workstation",
+      "exposed_to_internet": false,
+      "security_posture_score": 0.40,
+      "value": 7.0,
+      "detection_chance_modifier": 0.10,
+      "has_admin_users": true,
+      "smb_enabled": true,
+      "rdp_enabled": true,
+      "c2_resource_generation_rate": 1.0,
+      "services_running": [
+        { "id": "rdp", "protocol": "TCP/3389" },
+        { "id": "smb_share", "protocol": "TCP/445" }
+      ],
+      "vulnerabilities": [
+        {
+          "cve_id": "CVE-2023-36884",
+          "service_id": null,
+          "exploitability": 0.75,
+          "severity": 0.8
+        }
+      ]
+    },
+    {
+      "id": "ws_dev_01",
+      "name": "Dev Workstation",
+      "node_type": "Workstation",
+      "exposed_to_internet": false,
+      "security_posture_score": 0.35,
+      "value": 4.0,
+      "detection_chance_modifier": 0.10,
+      "has_admin_users": false,
+      "smb_enabled": true,
+      "rdp_enabled": true,
+      "c2_resource_generation_rate": 1.0,
+      "services_running": [
+        { "id": "ssh", "protocol": "TCP/22" },
+        { "id": "rdp", "protocol": "TCP/3389" },
+        { "id": "smb_share", "protocol": "TCP/445" }
+      ],
+      "vulnerabilities": [
+        {
+          "cve_id": "CVE-2023-38831",
+          "service_id": null,
+          "exploitability": 0.65,
+          "severity": 0.7
+        }
+      ]
+    }
+  ],
+  "edges": [
+    { "source_node_id": "fw_edge",      "target_node_id": "web_dmz",     "bidirectional": true,  "traffic_type": "HTTP" },
+    { "source_node_id": "fw_edge",      "target_node_id": "mail_srv",    "bidirectional": true,  "traffic_type": "SMTP" },
+    { "source_node_id": "web_dmz",      "target_node_id": "ad_dc",       "bidirectional": true,  "traffic_type": "LDAP" },
+    { "source_node_id": "web_dmz",      "target_node_id": "file_srv",    "bidirectional": true,  "traffic_type": "SMB" },
+    { "source_node_id": "mail_srv",     "target_node_id": "ad_dc",       "bidirectional": true,  "traffic_type": "LDAP" },
+    { "source_node_id": "mail_srv",     "target_node_id": "ws_exec_01",  "bidirectional": true,  "traffic_type": "SMTP" },
+    { "source_node_id": "ad_dc",        "target_node_id": "file_srv",    "bidirectional": true,  "traffic_type": "SMB" },
+    { "source_node_id": "ad_dc",        "target_node_id": "db_srv",      "bidirectional": true,  "traffic_type": "SQL" },
+    { "source_node_id": "ad_dc",        "target_node_id": "ws_exec_01",  "bidirectional": true,  "traffic_type": "RDP" },
+    { "source_node_id": "ad_dc",        "target_node_id": "ws_dev_01",   "bidirectional": true,  "traffic_type": "RDP" },
+    { "source_node_id": "file_srv",     "target_node_id": "ws_exec_01",  "bidirectional": true,  "traffic_type": "SMB" },
+    { "source_node_id": "file_srv",     "target_node_id": "ws_dev_01",   "bidirectional": true,  "traffic_type": "SMB" },
+    { "source_node_id": "ws_exec_01",   "target_node_id": "db_srv",      "bidirectional": true,  "traffic_type": "SQL" }
+  ]
+}
