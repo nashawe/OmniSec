@@ -14,7 +14,7 @@ from api_client import APIClient
 from theme import ThemeManager
 
 
-def format_sim_time(sim_time: float) -> str:
+def format_sim_time(sim_time):
     total_s = int(sim_time * 60)
     return f"{total_s // 60:02d}:{total_s % 60:02d}"
 
